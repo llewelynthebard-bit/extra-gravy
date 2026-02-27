@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extra Gravy</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --cream:   #f5eed8;
+      --tan:     #d4b483;
+      --brown:   #7a5c35;
+      --dark:    #2e1f0e;
+      --darker:  #1a1005;
+      --rust:    #9b4a1b;
+      --green:   #3d5a2e;
+      --paper:   #fdf6e3;
+    }
+
+    body {
+      background-color: var(--darker);
+      color: var(--cream);
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 1.5rem;
+      background: linear-gradient(to bottom, #0e0802, var(--darker));
+      border-bottom: 2px solid var(--brown);
+      position: relative;
+    }
+
+    header::before {
+      content: '~ ~ ~';
+      display: block;
+      color: var(--tan);
+      font-size: 1rem;
+      letter-spacing: 6px;
+      margin-bottom: 0.6rem;
+      opacity: 0.5;
+    }
+
+    header h1 {
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--tan);
+      text-shadow: 2px 3px 0 var(--darker), 0 0 30px rgba(212, 180, 131, 0.25);
+      line-height: 1;
+    }
+
+    header .tagline {
+      margin-top: 0.6rem;
+      font-size: 0.9rem;
+      letter-spacing: 3px;
+      color: rgba(212, 180, 131, 0.55);
+      text-transform: uppercase;
+      font-style: italic;
+    }
+
+    /* ── TABS NAV ── */
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      background: var(--dark);
+      border-bottom: 2px solid var(--brown);
+    }
+
+    .tab-nav button {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: rgba(212, 180, 131, 0.55);
+      font-family: 'Georgia', serif;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -2px;
+    }
+
+    .tab-nav button:hover {
+      color: var(--tan);
+    }
+
+    .tab-nav button.active {
+      color: var(--tan);
+      border-bottom-color: var(--rust);
+    }
+
+    /* ── TAB PANELS ── */
+    .tab-panel {
+      display: none;
+      flex: 1;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .panel-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .panel-inner h2 {
+      font-size: 1.6rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--tan);
+      margin-bottom: 0.6rem;
+    }
+
+    .panel-inner h2::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 2px;
+      background: var(--rust);
+      margin-top: 0.5rem;
+    }
+
+    /* ── LISTEN PANEL ── */
+    .record-shelf {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .record {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid rgba(212, 180, 131, 0.15);
+    }
+
+    .record:last-child {
+      border-bottom: none;
+    }
+
+    .record-art {
+      width: 130px;
+      height: 130px;
+      flex-shrink: 0;
+      background: var(--dark);
+      border: 2px solid var(--brown);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .record-art::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.08) 3px,
+        rgba(0,0,0,0.08) 6px
+      );
+    }
+
+    .record-details {
+      flex: 1;
+    }
+
+    .record-details h3 {
+      font-size: 1.3rem;
+      color: var(--cream);
+      letter-spacing: 1px;
+    }
+
+    .record-details .record-meta {
+      font-size: 0.8rem;
+      color: var(--tan);
+      opacity: 0.7;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+
+    .record-details .record-desc {
+      font-size: 0.95rem;
+      color: rgba(245, 238, 216, 0.65);
+      line-height: 1.7;
+      margin-top: 0.8rem;
+      font-style: italic;
+    }
+
+    .record-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 1.2rem;
+    }
+
+    .record-links a {
+      padding: 0.4rem 1.1rem;
+      border: 1px solid var(--brown);
+      color: var(--tan);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .record-links a:hover {
+      background: var(--brown);
+      color: var(--darker);
+    }
+
+    /* ── SHOWS PANEL ── */
+    .shows-list {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .show-item {
+      display: grid;
+      grid-template-columns: 110px 1fr auto;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.3rem 1.6rem;
+      border: 1px solid rgba(122, 92, 53, 0.35);
+      background: rgba(46, 31, 14, 0.4);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .show-item:hover {
+      border-color: var(--brown);
+      background: rgba(46, 31, 14, 0.7);
+    }
+
+    .show-date {
+      text-align: center;
+    }
+
+    .show-date .month {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--rust);
+    }
+
+    .show-date .day {
+      display: block;
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--tan);
+      font-weight: bold;
+    }
+
+    .show-date .year {
+      display: block;
+      font-size: 0.7rem;
+      color: rgba(212, 180, 131, 0.4);
+      letter-spacing: 2px;
+    }
+
+    .show-info h3 {
+      font-size: 1rem;
+      letter-spacing: 1px;
+      color: var(--cream);
+    }
+
+    .show-info p {
+      font-size: 0.82rem;
+      color: rgba(212, 180, 131, 0.6);
+      margin-top: 0.25rem;
+      letter-spacing: 0.5px;
+    }
+
+    .show-ticket {
+      padding: 0.5rem 1.3rem;
+      border: 1px solid var(--rust);
+      color: var(--rust);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .show-ticket:hover {
+      background: var(--rust);
+      color: var(--cream);
+    }
+
+    .no-shows {
+      font-style: italic;
+      color: rgba(212, 180, 131, 0.45);
+      margin-top: 2rem;
+    }
+
+    /* ── ABOUT PANEL ── */
+    .about-body {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    @media (max-width: 620px) {
+      .about-body { grid-template-columns: 1fr; }
+      .record { flex-direction: column; }
+      .record-art { width: 100%; height: 160px; }
+      .show-item { grid-template-columns: 80px 1fr; }
+      .show-ticket { grid-column: 1 / -1; }
+    }
+
+    .about-text p {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: rgba(245, 238, 216, 0.75);
+      margin-bottom: 1.2rem;
+    }
+
+    .members-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .member {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.1rem;
+      background: rgba(46, 31, 14, 0.5);
+      border-left: 3px solid var(--rust);
+    }
+
+    .member-icon {
+      font-size: 1.8rem;
+      width: 42px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .member-info h3 {
+      font-size: 0.95rem;
+      color: var(--tan);
+      letter-spacing: 1px;
+    }
+
+    .member-info p {
+      font-size: 0.8rem;
+      color: rgba(212, 180, 131, 0.5);
+      margin-top: 0.15rem;
+      font-style: italic;
+    }
+
+    /* ── CONTACT PANEL ── */
+    .contact-wrap {
+      margin-top: 2.5rem;
+      max-width: 520px;
+    }
+
+    .contact-intro {
+      font-size: 0.95rem;
+      color: rgba(245, 238, 216, 0.6);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-form label {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--tan);
+      opacity: 0.7;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .contact-form input,
+    .contact-form select,
+    .contact-form textarea {
+      width: 100%;
+      background: rgba(46, 31, 14, 0.6);
+      border: 1px solid rgba(122, 92, 53, 0.4);
+      color: var(--cream);
+      padding: 0.8rem 1rem;
+      font-family: 'Georgia', serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .contact-form input:focus,
+    .contact-form select:focus,
+    .contact-form textarea:focus {
+      border-color: var(--tan);
+    }
+
+    .contact-form select option {
+      background: var(--dark);
+    }
+
+    .contact-form textarea {
+      height: 130px;
+      resize: vertical;
+    }
+
+    .contact-form button {
+      margin-top: 0.5rem;
+      padding: 0.9rem;
+      background: var(--rust);
+      border: none;
+      color: var(--cream);
+      font-family: 'Georgia', serif;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .contact-form button:hover {
+      background: #b55620;
+    }
+
+    .contact-form button.sent {
+      background: var(--green);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid rgba(122, 92, 53, 0.3);
+      padding: 1.8rem 2rem;
+      text-align: center;
+      background: var(--darker);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .social-links a {
+      color: rgba(212, 180, 131, 0.4);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .social-links a:hover {
+      color: var(--tan);
+    }
+
+    footer p {
+      font-size: 0.72rem;
+      color: rgba(212, 180, 131, 0.2);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <h1>Extra Gravy</h1>
+    <p class="tagline">Bluegrass &bull; Old-time &bull; Good times</p>
+  </header>
+
+  <!-- TAB NAV -->
+  <nav class="tab-nav" role="tablist">
+    <button class="active" role="tab" data-tab="listen">Listen</button>
+    <button role="tab" data-tab="shows">Shows</button>
+    <button role="tab" data-tab="about">About</button>
+    <button role="tab" data-tab="contact">Contact</button>
+  </nav>
+
+  <!-- LISTEN -->
+  <div class="tab-panel active" id="tab-listen" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Records</h2>
+      <div class="record-shelf">
+
+        <div class="record">
+          <div class="record-art">🪕</div>
+          <div class="record-details">
+            <h3>The Whole Plate</h3>
+            <p class="record-meta">EP &bull; 2024</p>
+            <p class="record-desc">
+              Our debut EP — four tracks cut live in a barn outside of town.
+              Banjos, fiddles, and a whole lot of heart.
+            </p>
+            <div class="record-links">
+              <a href="#">Spotify</a>
+              <a href="#">Apple Music</a>
+              <a href="#">Bandcamp</a>
+              <a href="#">YouTube</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="record">
+          <div class="record-art">🎻</div>
+          <div class="record-details">
+            <h3>Gravy Train</h3>
+            <p class="record-meta">Single &bull; 2025</p>
+            <p class="record-desc">
+              Our first studio single. A driving, foot-stomping tune about moving on
+              and moving fast — with a fiddle lead that'll haunt your dreams.
+            </p>
+            <div class="record-links">
+              <a href="#">Spotify</a>
+              <a href="#">Apple Music</a>
+              <a href="#">Bandcamp</a>
+              <a href="#">YouTube</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="record">
+          <div class="record-art">🎶</div>
+          <div class="record-details">
+            <h3>Too Much of a Good Thing</h3>
+            <p class="record-meta">Single &bull; 2025</p>
+            <p class="record-desc">
+              A slow-burning waltz about the things worth overdoing.
+              Harmony vocals up front, mandolin weaving all the way through.
+            </p>
+            <div class="record-links">
+              <a href="#">Spotify</a>
+              <a href="#">Apple Music</a>
+              <a href="#">Bandcamp</a>
+              <a href="#">YouTube</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOWS -->
+  <div class="tab-panel" id="tab-shows" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Upcoming Shows</h2>
+      <div class="shows-list">
+
+        <div class="show-item">
+          <div class="show-date">
+            <span class="month">Mar</span>
+            <span class="day">15</span>
+            <span class="year">2026</span>
+          </div>
+          <div class="show-info">
+            <h3>The Rusty Ladle</h3>
+            <p>Chicago, IL &mdash; Doors 8pm</p>
+          </div>
+          <a href="#" class="show-ticket">Tickets</a>
+        </div>
+
+        <div class="show-item">
+          <div class="show-date">
+            <span class="month">Apr</span>
+            <span class="day">04</span>
+            <span class="year">2026</span>
+          </div>
+          <div class="show-info">
+            <h3>Porch Fest</h3>
+            <p>Nashville, TN &mdash; All Day</p>
+          </div>
+          <a href="#" class="show-ticket">Free</a>
+        </div>
+
+        <div class="show-item">
+          <div class="show-date">
+            <span class="month">Apr</span>
+            <span class="day">22</span>
+            <span class="year">2026</span>
+          </div>
+          <div class="show-info">
+            <h3>The Pour House</h3>
+            <p>Austin, TX &mdash; Doors 7pm</p>
+          </div>
+          <a href="#" class="show-ticket">Tickets</a>
+        </div>
+
+        <div class="show-item">
+          <div class="show-date">
+            <span class="month">May</span>
+            <span class="day">10</span>
+            <span class="year">2026</span>
+          </div>
+          <div class="show-info">
+            <h3>Gravy Bowl Bluegrass Fest</h3>
+            <p>New Orleans, LA &mdash; Main Stage 6pm</p>
+          </div>
+          <a href="#" class="show-ticket">Tickets</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="tab-panel" id="tab-about" role="tabpanel">
+    <div class="panel-inner">
+      <h2>About</h2>
+      <div class="about-body">
+        <div class="about-text">
+          <p>
+            Extra Gravy is a bluegrass band serving up heaping portions of old-time
+            music with a generous side of soul. We play the kind of music that makes
+            you want to stomp your feet and hug a stranger.
+          </p>
+          <p>
+            Started around a kitchen table and a six-pack, we've been picking,
+            grinning, and occasionally arguing about tuning ever since.
+            We've played barns, festivals, back porches, and at least one wedding
+            that got a little out of hand.
+          </p>
+          <p>
+            When we're not on stage, we're probably cooking.
+          </p>
+        </div>
+        <div class="members-grid">
+          <div class="member">
+            <div class="member-icon">🪕</div>
+            <div class="member-info">
+              <h3>Name &mdash; Banjo</h3>
+              <p>Three-finger picking, zero regrets</p>
+            </div>
+          </div>
+          <div class="member">
+            <div class="member-icon">🎻</div>
+            <div class="member-info">
+              <h3>Name &mdash; Fiddle</h3>
+              <p>Crying on the high strings</p>
+            </div>
+          </div>
+          <div class="member">
+            <div class="member-icon">🎸</div>
+            <div class="member-info">
+              <h3>Name &mdash; Guitar / Vocals</h3>
+              <p>Keeping it together (mostly)</p>
+            </div>
+          </div>
+          <div class="member">
+            <div class="member-icon">🎵</div>
+            <div class="member-info">
+              <h3>Name &mdash; Mandolin</h3>
+              <p>Small instrument, big opinions</p>
+            </div>
+          </div>
+          <div class="member">
+            <div class="member-icon">🪗</div>
+            <div class="member-info">
+              <h3>Name &mdash; Upright Bass</h3>
+              <p>The foundation of everything</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="tab-panel" id="tab-contact" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Contact</h2>
+      <div class="contact-wrap">
+        <p class="contact-intro">
+          Want to book us for your festival, venue, barn dance, or backyard cookout?
+          We're game. Drop us a line below.
+        </p>
+        <form class="contact-form" onsubmit="handleSubmit(event)">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="Your name" required />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="your@email.com" required />
+          </div>
+          <div>
+            <label for="reason">Reason for reaching out</label>
+            <select id="reason">
+              <option value="">Select one...</option>
+              <option value="booking">Booking inquiry</option>
+              <option value="press">Press / media</option>
+              <option value="collab">Collaboration</option>
+              <option value="fan">Fan mail</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="message">Message</label>
+            <textarea id="message" placeholder="Tell us what you've got in mind..."></textarea>
+          </div>
+          <button type="submit" id="submit-btn">Send It</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="social-links">
+      <a href="#">Instagram</a>
+      <a href="#">Spotify</a>
+      <a href="#">Bandcamp</a>
+      <a href="#">YouTube</a>
+    </div>
+    <p>&copy; 2026 Extra Gravy &mdash; All rights reserved</p>
+  </footer>
+
+  <script>
+    // Tab switching
+    const tabButtons = document.querySelectorAll('.tab-nav button');
+    const tabPanels  = document.querySelectorAll('.tab-panel');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        tabPanels.forEach(p => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Contact form
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      btn.textContent = 'Message sent!';
+      btn.classList.add('sent');
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = 'Send It';
+        btn.classList.remove('sent');
+        btn.disabled = false;
+        e.target.reset();
+      }, 4000);
+    }
+  </script>
+
+</body>
+</html>
