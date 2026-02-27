@@ -490,6 +490,107 @@
       color: rgba(212, 180, 131, 0.2);
       letter-spacing: 1px;
     }
+
+    /* ── BANJO BLITZ GAME ── */
+    .game-subtitle {
+      text-align: center;
+      color: rgba(212, 180, 131, 0.65);
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+    }
+
+    #game-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      border: 1px solid rgba(122, 92, 53, 0.45);
+      border-radius: 4px;
+      overflow: hidden;
+      background: #1a1005;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+    }
+
+    #game-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(26, 16, 5, 0.93);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem 1.5rem;
+    }
+
+    #game-overlay h3 {
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      color: var(--tan);
+      margin-bottom: 0.9rem;
+    }
+
+    #game-overlay p {
+      color: var(--cream);
+      margin-bottom: 1.4rem;
+      line-height: 1.8;
+      font-size: 0.9rem;
+    }
+
+    #game-overlay kbd {
+      background: var(--brown);
+      color: var(--cream);
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+
+    #start-btn, #restart-btn {
+      background: var(--brown);
+      color: var(--cream);
+      border: 1px solid var(--tan);
+      padding: 0.65rem 1.8rem;
+      font-family: 'Georgia', serif;
+      font-size: 0.9rem;
+      letter-spacing: 3px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+
+    #start-btn:hover, #restart-btn:hover { background: var(--rust); }
+
+    .touch-btns {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 0.8rem;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .touch-btn {
+      flex: 1;
+      padding: 0.7rem 0;
+      font-size: 1.3rem;
+      background: var(--dark);
+      border: 1px solid var(--brown);
+      color: var(--tan);
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      transition: background 0.1s, border-color 0.1s;
+    }
+
+    .touch-btn:active { background: var(--brown); border-color: var(--tan); }
   </style>
 </head>
 <body>
@@ -506,6 +607,7 @@
     <button role="tab" data-tab="shows">Shows</button>
     <button role="tab" data-tab="about">About</button>
     <button role="tab" data-tab="contact">Contact</button>
+    <button role="tab" data-tab="play">Play</button>
   </nav>
 
   <!-- LISTEN -->
@@ -624,6 +726,38 @@
     </div>
   </div>
 
+  <!-- PLAY -->
+  <div class="tab-panel" id="tab-play" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Banjo Blitz</h2>
+      <p class="game-subtitle">Notes fall down four strings &mdash; hit them with <strong>A&nbsp;S&nbsp;D&nbsp;F</strong> (or tap the buttons below). Don&rsquo;t miss!</p>
+      <div id="game-wrap">
+        <canvas id="game-canvas"></canvas>
+        <div id="game-overlay">
+          <div id="start-screen">
+            <h3>🪕 Banjo Blitz</h3>
+            <p>Notes fall down four strings.<br>
+               Press <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> (or tap below)<br>
+               when they reach the strum zone.<br>
+               Miss three &mdash; and you&rsquo;re done!</p>
+            <button id="start-btn">Start Pickin&rsquo;</button>
+          </div>
+          <div id="gameover-screen" style="display:none">
+            <h3>Good Pickin&rsquo;!</h3>
+            <p id="final-score"></p>
+            <button id="restart-btn">Pick Again</button>
+          </div>
+        </div>
+      </div>
+      <div class="touch-btns">
+        <button class="touch-btn" id="tbtn-0">🪕</button>
+        <button class="touch-btn" id="tbtn-1">🎻</button>
+        <button class="touch-btn" id="tbtn-2">🎸</button>
+        <button class="touch-btn" id="tbtn-3">🪗</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div class="social-links">
@@ -664,6 +798,283 @@
         e.target.reset();
       }, 4000);
     }
+  </script>
+
+  <!-- BANJO BLITZ GAME -->
+  <script>
+  (function () {
+    var canvas = document.getElementById('game-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+
+    var LANES      = 4;
+    var RADIUS     = 15;
+    var HIT_FRAC   = 0.82;
+    var FALL_INIT  = 1800;
+    var WIN_PERFECT = 55;
+    var WIN_GOOD    = 115;
+    var WIN_OK      = 210;
+    var KEYS        = ['a', 's', 'd', 'f'];
+    var KEY_LABELS  = ['A', 'S', 'D', 'F'];
+    var NOTE_COLORS = ['#d4b483', '#e8834a', '#7fc47a', '#f5e08a'];
+
+    var notes = [], feedbacks = [], flashes = [];
+    var score = 0, combo = 0, lives = 3, highScore = 0;
+    var running = false, lastSpawn = 0, spawnGap = 900, fallMs = FALL_INIT;
+    var startTime = 0, raf = null;
+
+    function cW() { return canvas.width; }
+    function cH() { return canvas.height; }
+    function laneX(i) {
+      var pad = cW() * 0.12;
+      return pad + (i + 0.5) * ((cW() - pad * 2) / LANES);
+    }
+    function hitZoneY() { return cH() * HIT_FRAC; }
+
+    function spawnNote(lane) {
+      var now = performance.now();
+      notes.push({ lane: lane, spawnTime: now, targetTime: now + fallMs, hit: false, missed: false });
+    }
+
+    function spawnRound() {
+      var r = Math.random();
+      if (r < 0.55) {
+        spawnNote(Math.floor(Math.random() * LANES));
+      } else if (r < 0.82) {
+        var a = Math.floor(Math.random() * LANES);
+        var b; do { b = Math.floor(Math.random() * LANES); } while (b === a);
+        spawnNote(a); spawnNote(b);
+      } else {
+        var all = [0, 1, 2, 3].sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+        all.forEach(spawnNote);
+      }
+    }
+
+    function noteY(n, now) {
+      var frac = (now - n.spawnTime) / (n.targetTime - n.spawnTime);
+      return frac * hitZoneY();
+    }
+
+    function tryHit(lane) {
+      if (!running) return;
+      var now = performance.now();
+      var best = null, bestDt = Infinity;
+      notes.forEach(function (n) {
+        if (n.lane !== lane || n.hit || n.missed) return;
+        var dt = Math.abs(n.targetTime - now);
+        if (dt < bestDt) { bestDt = dt; best = n; }
+      });
+      flashes.push({ lane: lane, alpha: 1 });
+      if (!best || bestDt > WIN_OK * 1.4) return;
+      best.hit = true;
+      var x = laneX(lane), y = hitZoneY() - 38;
+      if (bestDt <= WIN_PERFECT) {
+        combo++; score += 100 * Math.max(1, Math.floor(combo / 5));
+        addFb(x, y, 'PERFECT!', '#f5c84a');
+      } else if (bestDt <= WIN_GOOD) {
+        combo++; score += 50 * Math.max(1, Math.floor(combo / 5));
+        addFb(x, y, 'GOOD', '#7fc47a');
+      } else {
+        combo = 0; score += 15;
+        addFb(x, y, 'OK', '#d4b483');
+      }
+    }
+
+    function addFb(x, y, text, color) {
+      feedbacks.push({ x: x, y: y, text: text, color: color, alpha: 1, life: 52 });
+    }
+
+    function draw(now) {
+      var W = cW(), H = cH(), hY = hitZoneY();
+      ctx.fillStyle = '#1a1005';
+      ctx.fillRect(0, 0, W, H);
+
+      // strings
+      for (var i = 0; i < LANES; i++) {
+        var x = laneX(i);
+        ctx.save();
+        ctx.strokeStyle = NOTE_COLORS[i];
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.18;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        ctx.restore();
+      }
+
+      // hit zone dashed line
+      ctx.save();
+      ctx.strokeStyle = '#d4b483';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.35;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(0, hY); ctx.lineTo(W, hY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // lane flashes
+      flashes.forEach(function (f) {
+        var fx = laneX(f.lane);
+        ctx.save();
+        ctx.globalAlpha = f.alpha * 0.55;
+        var g = ctx.createRadialGradient(fx, hY, 0, fx, hY, 38);
+        g.addColorStop(0, NOTE_COLORS[f.lane]);
+        g.addColorStop(1, 'transparent');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(fx, hY, 38, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      });
+
+      // key labels
+      ctx.save();
+      ctx.font = 'bold 12px Georgia';
+      ctx.textAlign = 'center';
+      for (var j = 0; j < LANES; j++) {
+        ctx.fillStyle = NOTE_COLORS[j];
+        ctx.globalAlpha = 0.75;
+        ctx.fillText(KEY_LABELS[j], laneX(j), hY + 24);
+      }
+      ctx.restore();
+
+      // notes
+      notes.forEach(function (n) {
+        if (n.hit || n.missed) return;
+        var ny = noteY(n, now);
+        if (ny < -RADIUS * 2 || ny > H + RADIUS) return;
+        var nx = laneX(n.lane);
+        // glow
+        ctx.save();
+        ctx.globalAlpha = 0.22;
+        var grd = ctx.createRadialGradient(nx, ny, 0, nx, ny, RADIUS * 2.5);
+        grd.addColorStop(0, NOTE_COLORS[n.lane]);
+        grd.addColorStop(1, 'transparent');
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.arc(nx, ny, RADIUS * 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        // circle
+        ctx.save();
+        ctx.fillStyle = NOTE_COLORS[n.lane];
+        ctx.beginPath(); ctx.arc(nx, ny, RADIUS, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#1a1005'; ctx.lineWidth = 1.5; ctx.stroke();
+        // symbol
+        ctx.fillStyle = '#1a1005';
+        ctx.font = 'bold 13px Georgia';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('\u266A', nx, ny + 1);
+        ctx.textBaseline = 'alphabetic';
+        ctx.restore();
+      });
+
+      // feedback pop-ups
+      feedbacks.forEach(function (f) {
+        ctx.save();
+        ctx.globalAlpha = f.alpha;
+        ctx.fillStyle = f.color;
+        ctx.font = 'bold 15px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText(f.text, f.x, f.y);
+        ctx.restore();
+      });
+
+      // HUD
+      ctx.save();
+      ctx.font = '13px Georgia';
+      ctx.fillStyle = '#d4b483';
+      ctx.textAlign = 'left';
+      ctx.fillText('Score: ' + score, 10, 20);
+      ctx.textAlign = 'center';
+      var hearts = '\u2665'.repeat(lives) + '\u2661'.repeat(Math.max(0, 3 - lives));
+      ctx.fillStyle = lives > 1 ? '#d4b483' : '#e8834a';
+      ctx.fillText(hearts, W / 2, 20);
+      ctx.fillStyle = '#d4b483';
+      ctx.textAlign = 'right';
+      if (combo >= 2) ctx.fillText(combo + '\u00D7 combo!', W - 10, 20);
+      ctx.restore();
+    }
+
+    function gameLoop(now) {
+      if (!running) return;
+      var elapsed = now - startTime;
+
+      if (now - lastSpawn > spawnGap) {
+        spawnRound();
+        lastSpawn = now;
+        spawnGap = Math.max(360, 900 - elapsed / 140);
+        fallMs  = Math.max(820, FALL_INIT - elapsed / 75);
+      }
+
+      notes.forEach(function (n) {
+        if (!n.hit && !n.missed && now > n.targetTime + WIN_OK * 1.3) {
+          n.missed = true;
+          lives = Math.max(0, lives - 1);
+          combo = 0;
+          addFb(laneX(n.lane), hitZoneY() - 38, 'MISS', '#c0392b');
+          if (lives === 0) { endGame(); return; }
+        }
+      });
+
+      notes     = notes.filter(function (n) { return !n.missed && !(n.hit && now > n.targetTime + 600); });
+      feedbacks.forEach(function (f) { f.life--; f.alpha = f.life / 52; f.y -= 0.7; });
+      feedbacks = feedbacks.filter(function (f) { return f.life > 0; });
+      flashes.forEach(function (f) { f.alpha -= 0.07; });
+      flashes   = flashes.filter(function (f) { return f.alpha > 0; });
+
+      draw(now);
+      raf = requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+      notes = []; feedbacks = []; flashes = [];
+      score = 0; combo = 0; lives = 3;
+      spawnGap = 900; fallMs = FALL_INIT;
+      running = true;
+      startTime = performance.now();
+      lastSpawn = startTime - 850;
+      document.getElementById('game-overlay').style.display = 'none';
+      raf = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      running = false;
+      cancelAnimationFrame(raf);
+      if (score > highScore) highScore = score;
+      var msg = 'You scored ' + score + ' points!';
+      if (score > 0 && score === highScore) msg += ' \uD83C\uDFC6 New best!';
+      else if (highScore > 0) msg += ' Best: ' + highScore;
+      document.getElementById('final-score').textContent = msg;
+      document.getElementById('gameover-screen').style.display = 'block';
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game-overlay').style.display = 'flex';
+    }
+
+    function resizeCanvas() {
+      var wrap = document.getElementById('game-wrap');
+      if (!wrap) return;
+      canvas.width  = wrap.clientWidth;
+      canvas.height = Math.min(460, Math.max(280, canvas.width * 0.68));
+      if (!running) { ctx.fillStyle = '#1a1005'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.repeat) return;
+      var i = KEYS.indexOf(e.key.toLowerCase());
+      if (i !== -1) { e.preventDefault(); tryHit(i); }
+    });
+
+    for (var ti = 0; ti < 4; ti++) {
+      (function (idx) {
+        var btn = document.getElementById('tbtn-' + idx);
+        if (!btn) return;
+        btn.addEventListener('touchstart', function (e) { e.preventDefault(); tryHit(idx); }, { passive: false });
+        btn.addEventListener('mousedown',  function (e) { e.preventDefault(); tryHit(idx); });
+      })(ti);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  })();
   </script>
 
 </body>
