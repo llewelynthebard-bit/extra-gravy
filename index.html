@@ -1073,6 +1073,11 @@
     }
 
     window.addEventListener('resize', resizeCanvas);
+
+    // Resize when the Play tab becomes visible (canvas is 0x0 while hidden)
+    var playTabBtn = document.querySelector('[data-tab="play"]');
+    if (playTabBtn) playTabBtn.addEventListener('click', resizeCanvas);
+
     resizeCanvas();
   })();
   </script>
