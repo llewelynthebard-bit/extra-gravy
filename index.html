@@ -38,6 +38,20 @@
       background: linear-gradient(to bottom, #0e0802, var(--darker));
       border-bottom: 2px solid var(--brown);
       position: relative;
+      overflow: hidden;
+    }
+
+    .header-notes {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    @keyframes float-note {
+      0%   { opacity: 0;   transform: translateY(0)     translateX(0)             scale(0.85); }
+      12%  { opacity: 1; }
+      88%  { opacity: 0.5; }
+      100% { opacity: 0;   transform: translateY(-110px) translateX(var(--drift)) scale(1); }
     }
 
 
@@ -531,6 +545,7 @@
 
   <!-- HEADER -->
   <header>
+    <div class="header-notes" aria-hidden="true"></div>
     <h1>Extra Gravy</h1>
     <p class="tagline">Bold original music, timeless standards, genre-pushing selections. Dig in!</p>
     <p class="tagline-sub">Boulder-Based Bluegrass Band</p>
@@ -681,6 +696,36 @@
   </footer>
 
   <script>
+    // Floating note animations in header
+    (function () {
+      const container = document.querySelector('.header-notes');
+      const symbols   = ['♪', '♫', '♩', '♪', '♫', '♩', '♪'];
+
+      function spawnNote() {
+        const el = document.createElement('span');
+        const drift = ((Math.random() - 0.5) * 40).toFixed(1) + 'px';
+        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        el.style.cssText = [
+          'position:absolute',
+          'font-family:Georgia,serif',
+          'user-select:none',
+          'bottom:' + (5  + Math.random() * 50)  + '%',
+          'left:'   + (4  + Math.random() * 88)  + '%',
+          'font-size:' + (0.85 + Math.random() * 0.9).toFixed(2) + 'rem',
+          'color:rgba(212,180,131,' + (0.12 + Math.random() * 0.28).toFixed(2) + ')',
+          '--drift:' + drift,
+          'animation:float-note ' + (4 + Math.random() * 4).toFixed(1) + 's ease-out forwards',
+        ].join(';');
+        container.appendChild(el);
+        el.addEventListener('animationend', () => el.remove());
+      }
+
+      // Stagger a few notes on load so the header isn't empty
+      [0, 600, 1300, 2100].forEach(delay => setTimeout(spawnNote, delay));
+      // Then keep a gentle trickle going
+      setInterval(spawnNote, 1800);
+    })();
+
     // Tab switching
     const tabButtons = document.querySelectorAll('.tab-nav button');
     const tabPanels  = document.querySelectorAll('.tab-panel');
