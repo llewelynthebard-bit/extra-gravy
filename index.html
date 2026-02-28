@@ -320,18 +320,31 @@
     /* ── ABOUT PANEL ── */
     .about-body {
       margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .about-top {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-columns: 2fr 1fr;
       gap: 2rem;
       align-items: start;
     }
 
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
     @media (max-width: 860px) {
-      .about-body { grid-template-columns: 1fr 1fr; }
+      .about-top { grid-template-columns: 1fr 1fr; }
+      .members-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 620px) {
-      .about-body { grid-template-columns: 1fr; }
+      .about-top { grid-template-columns: 1fr; }
       .record { flex-direction: column; }
       .record-art { width: 100%; height: 160px; }
       .show-item { grid-template-columns: 80px 1fr; }
@@ -352,19 +365,15 @@
       margin-bottom: 1.2rem;
     }
 
-    .members-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
-
     .member {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      padding: 0.9rem 1.1rem;
+      text-align: center;
+      gap: 0.6rem;
+      padding: 1rem 0.75rem;
       background: rgba(46, 31, 14, 0.5);
-      border-left: 3px solid var(--rust);
+      border-top: 3px solid var(--rust);
     }
 
     .member-icon {
@@ -641,8 +650,10 @@
     <div class="panel-inner">
       <h2>About</h2>
       <div class="about-body">
+        <div class="about-top">
         <img class="band-photo" src="https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/6ced64ab-c6e3-4eb7-b8dc-39019f247a09.jpg" alt="Extra Gravy band photo"/>
         <div class="about-text"><p>Extra Gravy is a four-piece bluegrass band based in Boulder, CO. With influences spanning classic bluegrass to jammin&rsquo; newgrass, Extra Gravy has a wide catalogue of new original music that blends bluegrass with other genres for creative and inspired songwriting. From high energy rippers to introspective tear-jerkers, Extra Gravy is rich in instrumentalism and lyricism. The members strive to bring forth creativity and emotion in their music while retaining the bluegrass roots they hold dear.</p></div>
+        </div>
         <div class="members-grid">
           <div class="member">
             <div class="member-icon">🪕</div>
