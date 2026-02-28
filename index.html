@@ -367,6 +367,51 @@
       .record-art { width: 100%; height: 160px; }
       .show-item { grid-template-columns: 80px 1fr; }
       .show-ticket { grid-column: 1 / -1; }
+
+      /* Mobile layout improvements */
+      header {
+        padding: 1.75rem 1rem 1rem;
+      }
+      header .tagline {
+        font-size: 0.75rem;
+        letter-spacing: 1.5px;
+      }
+      header .tagline-sub {
+        font-size: 0.62rem;
+        letter-spacing: 2px;
+      }
+      .tab-nav {
+        flex-wrap: nowrap;
+      }
+      .tab-nav button {
+        flex: 1;
+        padding: 0 0.25rem;
+        min-height: 48px;
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+      }
+      .panel-inner {
+        padding: 2rem 1rem;
+      }
+      .social-links {
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .contact-item {
+        word-break: break-all;
+        padding: 0.5rem 0;
+        display: block;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .tab-nav button {
+        font-size: 0.62rem;
+        letter-spacing: 0px;
+      }
+      .members-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .band-photo {
