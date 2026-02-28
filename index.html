@@ -410,71 +410,22 @@
       font-style: italic;
     }
 
-    .contact-form {
+    .contact-details {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
 
-    .contact-form label {
-      font-size: 0.75rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+    .contact-item {
+      font-size: 1.2rem;
       color: var(--tan);
-      opacity: 0.7;
-      display: block;
-      margin-bottom: 0.3rem;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s;
     }
 
-    .contact-form input,
-    .contact-form select,
-    .contact-form textarea {
-      width: 100%;
-      background: rgba(46, 31, 14, 0.6);
-      border: 1px solid rgba(122, 92, 53, 0.4);
+    .contact-item:hover {
       color: var(--cream);
-      padding: 0.8rem 1rem;
-      font-family: 'Georgia', serif;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .contact-form input:focus,
-    .contact-form select:focus,
-    .contact-form textarea:focus {
-      border-color: var(--tan);
-    }
-
-    .contact-form select option {
-      background: var(--dark);
-    }
-
-    .contact-form textarea {
-      height: 130px;
-      resize: vertical;
-    }
-
-    .contact-form button {
-      margin-top: 0.5rem;
-      padding: 0.9rem;
-      background: var(--rust);
-      border: none;
-      color: var(--cream);
-      font-family: 'Georgia', serif;
-      font-size: 0.85rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .contact-form button:hover {
-      background: #b55620;
-    }
-
-    .contact-form button.sent {
-      background: var(--green);
     }
 
     /* ── FOOTER ── */
@@ -724,36 +675,11 @@
     <div class="panel-inner">
       <h2>Contact</h2>
       <div class="contact-wrap">
-        <p class="contact-intro">
-          Want to book us for your festival, venue, barn dance, or backyard cookout?
-          We're game. Drop us a line below.
-        </p>
-        <form class="contact-form" onsubmit="handleSubmit(event)">
-          <div>
-            <label for="name">Name</label>
-            <input id="name" type="text" placeholder="Your name" required />
-          </div>
-          <div>
-            <label for="email">Email</label>
-            <input id="email" type="email" placeholder="your@email.com" required />
-          </div>
-          <div>
-            <label for="reason">Reason for reaching out</label>
-            <select id="reason">
-              <option value="">Select one...</option>
-              <option value="booking">Booking inquiry</option>
-              <option value="press">Press / media</option>
-              <option value="collab">Collaboration</option>
-              <option value="fan">Fan mail</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label for="message">Message</label>
-            <textarea id="message" placeholder="Tell us what you've got in mind..."></textarea>
-          </div>
-          <button type="submit" id="submit-btn">Send It</button>
-        </form>
+        <p class="contact-intro">For booking inquiries, reach out by email or phone:</p>
+        <div class="contact-details">
+          <a href="mailto:extragravymusic1@gmail.com" class="contact-item">extragravymusic1@gmail.com</a>
+          <a href="tel:+12017396614" class="contact-item">201-739-6614</a>
+        </div>
       </div>
     </div>
   </div>
@@ -784,20 +710,6 @@
       });
     });
 
-    // Contact form
-    function handleSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submit-btn');
-      btn.textContent = 'Message sent!';
-      btn.classList.add('sent');
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.textContent = 'Send It';
-        btn.classList.remove('sent');
-        btn.disabled = false;
-        e.target.reset();
-      }, 4000);
-    }
   </script>
 
 
