@@ -490,12 +490,92 @@
       color: rgba(212, 180, 131, 0.2);
       letter-spacing: 1px;
     }
+
+    /* ── GRAVY BOATS ── */
+    .gravy-boats {
+      display: flex;
+      justify-content: center;
+      gap: 70px;
+      margin-bottom: 0.7rem;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .boat-g {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: boat-bob 3.5s ease-in-out infinite;
+    }
+
+    .stream-path {
+      stroke-dasharray: 110;
+      stroke-dashoffset: 110;
+      animation: pour-gravy 3.5s ease-in-out infinite;
+    }
+
+    .drop {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: drip-drop 3.5s ease-in-out infinite;
+      opacity: 0;
+    }
+
+    @keyframes boat-bob {
+      0%, 100% { transform: rotate(-35deg) translateY(0); }
+      50%       { transform: rotate(-35deg) translateY(-4px); }
+    }
+
+    @keyframes pour-gravy {
+      0%, 18%   { stroke-dashoffset: 110; opacity: 0; }
+      28%       { opacity: 1; }
+      62%       { stroke-dashoffset: 0; opacity: 1; }
+      80%, 100% { stroke-dashoffset: 0; opacity: 0; }
+    }
+
+    @keyframes drip-drop {
+      0%, 60%   { transform: translateY(0) scale(1); opacity: 0; }
+      65%       { opacity: 1; }
+      80%       { transform: translateY(13px) scale(0.7); opacity: 0.7; }
+      95%, 100% { transform: translateY(28px) scale(0.2); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .gravy-boats { gap: 28px; }
+    }
   </style>
 </head>
 <body>
 
   <!-- HEADER -->
   <header>
+    <div class="gravy-boats" aria-hidden="true">
+      <!-- Boat 1 -->
+      <svg viewBox="0 0 110 145" width="66" height="87" style="overflow:visible">
+        <g class="boat-g">
+          <ellipse cx="50" cy="62" rx="22" ry="5" fill="#5a3d1e"/>
+          <ellipse cx="50" cy="46" rx="28" ry="16" fill="#7a5c35"/>
+          <ellipse cx="50" cy="32" rx="20" ry="7" fill="#5a3d1e"/>
+          <ellipse cx="50" cy="32" rx="16" ry="5" fill="#9b6b3a"/>
+          <path d="M23,37 C16,30 14,24 18,21 C21,24 22,30 26,35 Z" fill="#7a5c35"/>
+          <path d="M78,37 C86,37 88,45 88,51 C88,57 86,59 78,55" stroke="#7a5c35" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        </g>
+        <path class="stream-path" d="M13,43 C11,58 15,72 12,89 C10,104 13,118 11,138" stroke="#9b6b3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle class="drop" cx="11" cy="138" r="5" fill="#9b6b3a"/>
+      </svg>
+      <!-- Boat 2 (mirrored, staggered) -->
+      <svg viewBox="0 0 110 145" width="66" height="87" style="overflow:visible;transform:scaleX(-1)">
+        <g class="boat-g" style="animation-delay:1.75s">
+          <ellipse cx="50" cy="62" rx="22" ry="5" fill="#5a3d1e"/>
+          <ellipse cx="50" cy="46" rx="28" ry="16" fill="#7a5c35"/>
+          <ellipse cx="50" cy="32" rx="20" ry="7" fill="#5a3d1e"/>
+          <ellipse cx="50" cy="32" rx="16" ry="5" fill="#9b6b3a"/>
+          <path d="M23,37 C16,30 14,24 18,21 C21,24 22,30 26,35 Z" fill="#7a5c35"/>
+          <path d="M78,37 C86,37 88,45 88,51 C88,57 86,59 78,55" stroke="#7a5c35" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        </g>
+        <path class="stream-path" d="M13,43 C11,58 15,72 12,89 C10,104 13,118 11,138" stroke="#9b6b3a" stroke-width="5" fill="none" stroke-linecap="round" style="animation-delay:1.75s"/>
+        <circle class="drop" cx="11" cy="138" r="5" fill="#9b6b3a" style="animation-delay:1.75s"/>
+      </svg>
+    </div>
     <h1>Extra Gravy</h1>
     <p class="tagline">Boulder-based bluegrass band featuring bold original music, timeless standards, and genre-pushing selections. Dig in!</p>
   </header>
