@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Extra Gravy</title>
+  <link rel="icon" type="image/svg+xml" href="eg-logo.svg" />
   <style>
     * {
       margin: 0;
@@ -701,6 +702,131 @@
       padding: 0.25rem 0;
     }
 
+    /* ── GAME PANEL ── */
+    .game-wrap {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      margin-top: 2rem;
+      align-items: flex-start;
+    }
+
+    .game-canvas {
+      border: 2px solid var(--tan);
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .game-sidebar {
+      width: 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .next-canvas {
+      border: 1px solid var(--brown);
+      display: block;
+      background: #1a1005;
+    }
+
+    .game-label {
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(212, 180, 131, 0.5);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .game-stat {
+      font-size: 1.1rem;
+      color: var(--tan);
+      text-align: center;
+      letter-spacing: 1px;
+      line-height: 1.2;
+      word-break: break-all;
+    }
+
+    .game-start-btn {
+      width: 100%;
+      padding: 0.45rem 0.3rem;
+      border: 1px solid var(--rust);
+      background: none;
+      color: var(--rust);
+      font-family: 'Georgia', serif;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      margin-top: 0.35rem;
+    }
+
+    .game-start-btn:hover {
+      background: var(--rust);
+      color: var(--cream);
+    }
+
+    .game-btns {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      align-items: center;
+    }
+
+    .game-btns-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .gc-btn {
+      background: rgba(46, 31, 14, 0.7);
+      border: 1px solid var(--brown);
+      color: var(--tan);
+      font-size: 1.1rem;
+      width: 52px;
+      height: 44px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 2px;
+      touch-action: manipulation;
+    }
+
+    .gc-btn:active {
+      background: var(--brown);
+    }
+
+    .gc-wide {
+      width: 164px;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    .game-hint {
+      font-size: 0.72rem;
+      color: rgba(212, 180, 131, 0.3);
+      font-style: italic;
+      text-align: center;
+      margin-top: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 480px) {
+      .game-wrap {
+        transform: scale(0.82);
+        transform-origin: top left;
+      }
+      .game-btns {
+        display: flex;
+      }
+      .game-hint {
+        display: none;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -719,6 +845,7 @@
     <button role="tab" data-tab="shows">Shows</button>
     <button class="active" role="tab" data-tab="about">About</button>
     <button role="tab" data-tab="contact">Contact</button>
+    <button role="tab" data-tab="game">Game</button>
   </nav>
 
   <!-- LISTEN -->
@@ -843,6 +970,38 @@
           <a href="tel:+12017396614" class="contact-item">201-739-6614</a>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="tab-panel" id="tab-game" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Bluegrass Tetris</h2>
+      <div class="game-wrap">
+        <div class="game-sidebar">
+          <div class="game-label">Next</div>
+          <canvas id="next-canvas" class="next-canvas" width="80" height="80"></canvas>
+          <div class="game-label">Score</div>
+          <div class="game-stat" id="score-display">0</div>
+          <div class="game-label">Lines</div>
+          <div class="game-stat" id="lines-display">0</div>
+          <div class="game-label">Level</div>
+          <div class="game-stat" id="level-display">1</div>
+          <button class="game-start-btn" id="start-btn">Start</button>
+        </div>
+        <canvas id="game-canvas" class="game-canvas" width="280" height="560"></canvas>
+      </div>
+      <div class="game-btns">
+        <div class="game-btns-row">
+          <button id="gc-left" class="gc-btn">&#9664;</button>
+          <button id="gc-rotate" class="gc-btn">&#8635;</button>
+          <button id="gc-right" class="gc-btn">&#9654;</button>
+        </div>
+        <div class="game-btns-row">
+          <button id="gc-down" class="gc-btn gc-wide">&#9660; Drop</button>
+        </div>
+      </div>
+      <p class="game-hint">Arrow keys &middot; Space to hard drop</p>
     </div>
   </div>
 
