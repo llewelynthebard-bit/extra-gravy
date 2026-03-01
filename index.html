@@ -1203,5 +1203,302 @@
     })();
   </script>
 
+  <script>
+    // ── BLUEGRASS TETRIS ──
+    (function () {
+      'use strict';
+
+      const COLS = 10, ROWS = 20, SZ = 28;
+
+      const PIECES = [
+        { color: '#d4b483', shape: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]] }, // Banjo  / I
+        { color: '#f0e4b8', shape: [[1,1],[1,1]] },                              // Fiddle / O
+        { color: '#9b4a1b', shape: [[0,1,0],[1,1,1],[0,0,0]] },                  // Dobro  / T
+        { color: '#4a8a3a', shape: [[0,1,1],[1,1,0],[0,0,0]] },                  // Mandolin / S
+        { color: '#c17f3a', shape: [[1,1,0],[0,1,1],[0,0,0]] },                  // Guitar / Z
+        { color: '#3a6a9b', shape: [[1,0,0],[1,1,1],[0,0,0]] },                  // Dulcimer / J
+        { color: '#8b5bb5', shape: [[0,0,1],[1,1,1],[0,0,0]] },                  // Bass   / L
+      ];
+
+      const SCORE_TBL = [0, 100, 300, 500, 800];
+      const MSGS      = ['Dig In!', 'Pick It!', 'Hot Licks!', 'BLUEGRASS!'];
+
+      const canvas    = document.getElementById('game-canvas');
+      const ctx       = canvas.getContext('2d');
+      const nCv       = document.getElementById('next-canvas');
+      const nCtx      = nCv.getContext('2d');
+      const scoreEl   = document.getElementById('score-display');
+      const linesEl   = document.getElementById('lines-display');
+      const levelEl   = document.getElementById('level-display');
+      const startBtn  = document.getElementById('start-btn');
+      const gamePanel = document.getElementById('tab-game');
+
+      let board, cur, nxt, score, lines, level, active, timer;
+      let flashMsg = '', flashAlpha = 0;
+
+      function emptyBoard() {
+        return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      }
+
+      function mkPiece() {
+        const p = PIECES[Math.floor(Math.random() * PIECES.length)];
+        return {
+          shape: p.shape.map(r => r.slice()),
+          color: p.color,
+          x: Math.floor((COLS - p.shape[0].length) / 2),
+          y: -1,
+        };
+      }
+
+      // Clockwise 90° rotation for square matrices
+      function rot90(shape) {
+        const R = shape.length, C = shape[0].length;
+        return Array.from({ length: C }, (_, c) =>
+          Array.from({ length: R }, (__, r) => shape[R - 1 - r][c])
+        );
+      }
+
+      function valid(piece, dx, dy, shape) {
+        shape = shape || piece.shape;
+        const nx = piece.x + dx, ny = piece.y + dy;
+        for (let r = 0; r < shape.length; r++) {
+          for (let c = 0; c < shape[r].length; c++) {
+            if (!shape[r][c]) continue;
+            const bx = nx + c, by = ny + r;
+            if (bx < 0 || bx >= COLS || by >= ROWS) return false;
+            if (by >= 0 && board[by][bx]) return false;
+          }
+        }
+        return true;
+      }
+
+      function ghostY() {
+        let dy = 0;
+        while (valid(cur, 0, dy + 1)) dy++;
+        return cur.y + dy;
+      }
+
+      function place() {
+        const { shape, color, x, y } = cur;
+        for (let r = 0; r < shape.length; r++)
+          for (let c = 0; c < shape[r].length; c++)
+            if (shape[r][c] && y + r >= 0)
+              board[y + r][x + c] = color;
+
+        let cleared = 0;
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (board[r].every(v => v !== null)) {
+            board.splice(r, 1);
+            board.unshift(Array(COLS).fill(null));
+            cleared++; r++;
+          }
+        }
+
+        if (cleared) {
+          score += SCORE_TBL[cleared] * level;
+          lines += cleared;
+          level = Math.floor(lines / 10) + 1;
+          scoreEl.textContent = score;
+          linesEl.textContent = lines;
+          levelEl.textContent = level;
+          flashMsg   = MSGS[Math.min(cleared - 1, 3)];
+          flashAlpha = 80;
+          resetTimer();
+          requestAnimationFrame(draw); // kick off flash animation
+        }
+
+        cur = nxt;
+        nxt = mkPiece();
+        if (!valid(cur, 0, 0)) { endGame(); return; }
+        drawNext();
+      }
+
+      function tick() {
+        if (!active) return;
+        if (valid(cur, 0, 1)) { cur.y++; } else { place(); }
+        draw();
+      }
+
+      function hardDrop() {
+        if (!active) return;
+        cur.y = ghostY();
+        place();
+        draw();
+      }
+
+      function tryRotate() {
+        if (!active) return;
+        const r = rot90(cur.shape);
+        for (const k of [0, 1, -1, 2, -2]) {
+          if (valid(cur, k, 0, r)) {
+            cur.shape = r;
+            cur.x += k;
+            draw();
+            return;
+          }
+        }
+      }
+
+      function resetTimer() {
+        clearInterval(timer);
+        timer = setInterval(tick, Math.max(80, 800 - (level - 1) * 72));
+      }
+
+      function startGame() {
+        board = emptyBoard();
+        score = 0; lines = 0; level = 1;
+        scoreEl.textContent = '0';
+        linesEl.textContent = '0';
+        levelEl.textContent = '1';
+        flashMsg = ''; flashAlpha = 0;
+        active = true;
+        cur = mkPiece();
+        nxt = mkPiece();
+        startBtn.textContent = 'Restart';
+        drawNext();
+        resetTimer();
+        draw();
+      }
+
+      function endGame() {
+        clearInterval(timer);
+        active = false;
+        draw();
+      }
+
+      // ── DRAWING ──
+
+      function drawCell(cx, gx, gy, color) {
+        const px = gx * SZ, py = gy * SZ;
+        cx.fillStyle = color;
+        cx.fillRect(px, py, SZ, SZ);
+        // highlight (top-left edge)
+        cx.fillStyle = 'rgba(255,255,255,0.18)';
+        cx.fillRect(px, py, SZ, 3);
+        cx.fillRect(px, py, 3, SZ);
+        // shadow (bottom-right edge)
+        cx.fillStyle = 'rgba(0,0,0,0.3)';
+        cx.fillRect(px + SZ - 3, py, 3, SZ);
+        cx.fillRect(px, py + SZ - 3, SZ, 3);
+      }
+
+      function draw() {
+        // Background
+        ctx.fillStyle = '#1a1005';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Faint grid
+        ctx.strokeStyle = 'rgba(122,92,53,0.12)';
+        ctx.lineWidth = 0.5;
+        for (let c = 0; c <= COLS; c++) {
+          ctx.beginPath(); ctx.moveTo(c * SZ, 0); ctx.lineTo(c * SZ, canvas.height); ctx.stroke();
+        }
+        for (let r = 0; r <= ROWS; r++) {
+          ctx.beginPath(); ctx.moveTo(0, r * SZ); ctx.lineTo(canvas.width, r * SZ); ctx.stroke();
+        }
+
+        // Placed board cells
+        for (let r = 0; r < ROWS; r++)
+          for (let c = 0; c < COLS; c++)
+            if (board[r][c]) drawCell(ctx, c, r, board[r][c]);
+
+        // Ghost piece
+        if (active && cur) {
+          const gy = ghostY();
+          ctx.save();
+          ctx.globalAlpha = 0.18;
+          for (let r = 0; r < cur.shape.length; r++)
+            for (let c = 0; c < cur.shape[r].length; c++)
+              if (cur.shape[r][c]) {
+                ctx.fillStyle = cur.color;
+                ctx.fillRect((cur.x + c) * SZ, (gy + r) * SZ, SZ, SZ);
+              }
+          ctx.restore();
+        }
+
+        // Active piece
+        if (cur) {
+          for (let r = 0; r < cur.shape.length; r++)
+            for (let c = 0; c < cur.shape[r].length; c++)
+              if (cur.shape[r][c] && cur.y + r >= 0)
+                drawCell(ctx, cur.x + c, cur.y + r, cur.color);
+        }
+
+        // Flash message (line clear)
+        if (flashAlpha > 0) {
+          const a = Math.min(1, flashAlpha / 30);
+          ctx.save();
+          ctx.globalAlpha = a;
+          ctx.font = 'bold 22px Georgia, serif';
+          ctx.textAlign = 'center';
+          ctx.shadowColor = '#9b4a1b';
+          ctx.shadowBlur = 14;
+          ctx.fillStyle = '#f0e4b8';
+          ctx.fillText(flashMsg, canvas.width / 2, canvas.height / 2 - 10);
+          ctx.restore();
+          flashAlpha--;
+          if (flashAlpha > 0) requestAnimationFrame(draw);
+        }
+
+        // Game over overlay
+        if (!active && board && board.some(row => row.some(v => v !== null))) {
+          ctx.fillStyle = 'rgba(26,16,5,0.80)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 26px Georgia, serif';
+          ctx.fillStyle = '#d4b483';
+          ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 16);
+          ctx.font = '13px Georgia, serif';
+          ctx.fillStyle = 'rgba(212,180,131,0.6)';
+          ctx.fillText('Press Start to play again', canvas.width / 2, canvas.height / 2 + 14);
+        }
+      }
+
+      function drawNext() {
+        nCtx.fillStyle = '#1a1005';
+        nCtx.fillRect(0, 0, nCv.width, nCv.height);
+        if (!nxt) return;
+        const s = nxt.shape, csz = 18;
+        const ox = Math.floor((nCv.width  - s[0].length * csz) / 2);
+        const oy = Math.floor((nCv.height - s.length    * csz) / 2);
+        nCtx.fillStyle = nxt.color;
+        for (let r = 0; r < s.length; r++)
+          for (let c = 0; c < s[r].length; c++)
+            if (s[r][c]) nCtx.fillRect(ox + c * csz, oy + r * csz, csz - 1, csz - 1);
+      }
+
+      // ── CONTROLS ──
+
+      document.addEventListener('keydown', e => {
+        if (!gamePanel.classList.contains('active')) return;
+        // Prevent arrow keys / space from scrolling on the game tab
+        if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+        if (!active) return;
+        switch (e.key) {
+          case 'ArrowLeft':  case 'a': case 'A':
+            if (valid(cur, -1, 0)) { cur.x--; draw(); } break;
+          case 'ArrowRight': case 'd': case 'D':
+            if (valid(cur,  1, 0)) { cur.x++; draw(); } break;
+          case 'ArrowUp':    case 'w': case 'W':
+            tryRotate(); break;
+          case 'ArrowDown':  case 's': case 'S':
+            if (valid(cur, 0, 1)) { cur.y++; draw(); } break;
+          case ' ':
+            hardDrop(); break;
+        }
+      });
+
+      document.getElementById('gc-left')  .addEventListener('click', () => { if (active && valid(cur, -1, 0)) { cur.x--; draw(); } });
+      document.getElementById('gc-right') .addEventListener('click', () => { if (active && valid(cur,  1, 0)) { cur.x++; draw(); } });
+      document.getElementById('gc-rotate').addEventListener('click', tryRotate);
+      document.getElementById('gc-down')  .addEventListener('click', hardDrop);
+      startBtn.addEventListener('click', startGame);
+
+      // Draw empty board on load
+      board = emptyBoard();
+      draw();
+    })();
+  </script>
+
 </body>
 </html>
