@@ -920,8 +920,13 @@
       // Use the raw file URL:
       // https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/audio/FILENAME.mp3
       // ----------------------------------------------------------------
+      const base = 'https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/audio/';
       const playlist = [
-        // { title: 'Song Name', src: 'https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/audio/song.mp3' },
+        { title: 'Almost Thirty',  src: base + 'AlmostThirty_Prac021026.mp3' },
+        { title: 'Cascadia',       src: base + 'Cascadia2_Practice021026.mp3' },
+        { title: 'Pines',          src: base + 'Pines_Practice021026.mp3' },
+        { title: 'Steel Horse',    src: base + 'SteelHorseBass_Practice021026.mp3' },
+        { title: 'Time to Kill',   src: base + 'TimeToKill2_Practice021026.mp3' },
       ];
 
       const player    = document.getElementById('music-player');
