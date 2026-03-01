@@ -963,12 +963,27 @@
       function play() { audio.play(); playing = true;  playBtn.textContent = '⏸'; }
       function pause(){ audio.pause(); playing = false; playBtn.textContent = '▶'; }
 
+      audio.volume = 0.08;
+
       if (playlist.length === 0) {
         titleEl.textContent = '';
         titleEl.insertAdjacentHTML('afterend', '<p class="player-empty">No songs loaded yet</p>');
         playBtn.disabled = prevBtn.disabled = nextBtn.disabled = true;
       } else {
         load(0);
+        // Try autoplay; if blocked, start on first user interaction
+        audio.play().then(() => {
+          playing = true;
+          playBtn.textContent = '⏸';
+        }).catch(() => {
+          const startOnInteract = () => {
+            play();
+            document.removeEventListener('click', startOnInteract);
+            document.removeEventListener('keydown', startOnInteract);
+          };
+          document.addEventListener('click', startOnInteract);
+          document.addEventListener('keydown', startOnInteract);
+        });
       }
 
       playBtn.addEventListener('click', () => playing ? pause() : play());
