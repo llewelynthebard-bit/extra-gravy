@@ -679,6 +679,20 @@
       color: var(--tan) !important;
     }
 
+    .player-select {
+      width: 100%;
+      background: rgba(46, 31, 14, 0.9);
+      border: 1px solid rgba(122, 92, 53, 0.5);
+      color: var(--tan);
+      font-family: 'Georgia', serif;
+      font-size: 0.72rem;
+      padding: 0.3rem 0.4rem;
+      margin-bottom: 0.55rem;
+      cursor: pointer;
+      outline: none;
+      border-radius: 1px;
+    }
+
     .player-empty {
       font-size: 0.72rem;
       color: rgba(212, 180, 131, 0.4);
@@ -833,13 +847,14 @@
   </div>
 
   <!-- MINI PLAYER -->
-  <div id="music-player">
+  <div id="music-player" class="expanded">
     <button class="player-toggle" title="Music player">♪</button>
     <div class="player-body">
       <div class="player-song-info">
         <span class="player-title">—</span>
         <span class="player-index"></span>
       </div>
+      <select class="player-select" title="Song list"></select>
       <input type="range" class="player-progress" value="0" min="0" max="100" step="0.1">
       <div class="player-time">
         <span class="time-current">0:00</span>
@@ -929,12 +944,18 @@
         { title: 'Time to Kill',   src: base + 'TimeToKill2_Practice021026.mp3' },
       ];
 
+      // Shuffle playlist (Fisher-Yates)
+      for (let i = playlist.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+      }
+
       const player    = document.getElementById('music-player');
       const toggleBtn = player.querySelector('.player-toggle');
-      const body      = player.querySelector('.player-body');
       const audio     = player.querySelector('audio');
       const titleEl   = player.querySelector('.player-title');
       const indexEl   = player.querySelector('.player-index');
+      const selectEl  = player.querySelector('.player-select');
       const progress  = player.querySelector('.player-progress');
       const timeCur   = player.querySelector('.time-current');
       const timeTot   = player.querySelector('.time-total');
@@ -944,6 +965,14 @@
 
       let current = 0;
       let playing  = false;
+
+      // Populate dropdown
+      playlist.forEach((track, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = track.title;
+        selectEl.appendChild(opt);
+      });
 
       function fmt(s) {
         if (!isFinite(s)) return '0:00';
@@ -955,6 +984,7 @@
         audio.src = playlist[current].src;
         titleEl.textContent = playlist[current].title;
         indexEl.textContent = (current + 1) + ' / ' + playlist.length;
+        selectEl.value = current;
         progress.value = 0;
         timeCur.textContent = '0:00';
         timeTot.textContent = '0:00';
@@ -986,6 +1016,7 @@
         });
       }
 
+      selectEl.addEventListener('change', () => { load(parseInt(selectEl.value)); play(); });
       playBtn.addEventListener('click', () => playing ? pause() : play());
       prevBtn.addEventListener('click', () => { load(current - 1); play(); });
       nextBtn.addEventListener('click', () => { load(current + 1); play(); });
