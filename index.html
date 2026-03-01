@@ -545,6 +545,148 @@
       letter-spacing: 1px;
     }
 
+    /* ── MINI PLAYER ── */
+    #music-player {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      font-family: 'Georgia', serif;
+    }
+
+    .player-toggle {
+      display: block;
+      margin-left: auto;
+      background: rgba(26, 16, 5, 0.92);
+      border: 1px solid var(--brown);
+      color: var(--tan);
+      font-size: 1rem;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s, border-color 0.2s;
+      line-height: 1;
+    }
+
+    .player-toggle:hover {
+      background: var(--dark);
+      border-color: var(--tan);
+    }
+
+    .player-body {
+      display: none;
+      margin-top: 0.4rem;
+      background: rgba(20, 12, 4, 0.97);
+      border: 1px solid var(--brown);
+      padding: 0.8rem;
+      width: 220px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+    }
+
+    #music-player.expanded .player-body {
+      display: block;
+    }
+
+    .player-song-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.55rem;
+      gap: 0.5rem;
+    }
+
+    .player-title {
+      font-size: 0.78rem;
+      color: var(--cream);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-index {
+      font-size: 0.62rem;
+      color: rgba(212, 180, 131, 0.45);
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .player-progress {
+      width: 100%;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(122, 92, 53, 0.4);
+      border-radius: 2px;
+      cursor: pointer;
+      outline: none;
+      display: block;
+    }
+
+    .player-progress::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--rust);
+      cursor: pointer;
+    }
+
+    .player-progress::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--rust);
+      cursor: pointer;
+      border: none;
+    }
+
+    .player-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6rem;
+      color: rgba(212, 180, 131, 0.4);
+      margin-top: 0.3rem;
+      letter-spacing: 0.5px;
+    }
+
+    .player-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+
+    .player-controls button {
+      background: none;
+      border: none;
+      color: rgba(212, 180, 131, 0.6);
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 0.3rem 0.5rem;
+      transition: color 0.2s;
+      min-height: 32px;
+    }
+
+    .player-controls button:hover {
+      color: var(--tan);
+    }
+
+    .player-playpause {
+      font-size: 1.15rem !important;
+      color: var(--tan) !important;
+    }
+
+    .player-empty {
+      font-size: 0.72rem;
+      color: rgba(212, 180, 131, 0.4);
+      font-style: italic;
+      text-align: center;
+      padding: 0.25rem 0;
+    }
+
   </style>
 </head>
 <body>
@@ -690,6 +832,28 @@
     </div>
   </div>
 
+  <!-- MINI PLAYER -->
+  <div id="music-player">
+    <button class="player-toggle" title="Music player">♪</button>
+    <div class="player-body">
+      <div class="player-song-info">
+        <span class="player-title">—</span>
+        <span class="player-index"></span>
+      </div>
+      <input type="range" class="player-progress" value="0" min="0" max="100" step="0.1">
+      <div class="player-time">
+        <span class="time-current">0:00</span>
+        <span class="time-total">0:00</span>
+      </div>
+      <div class="player-controls">
+        <button class="player-prev" title="Previous">⏮</button>
+        <button class="player-playpause" title="Play">▶</button>
+        <button class="player-next" title="Next">⏭</button>
+      </div>
+    </div>
+    <audio></audio>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div class="social-links">
@@ -748,6 +912,86 @@
 
   </script>
 
+  <script>
+    // ── MINI PLAYER ──
+    (function () {
+      // ----------------------------------------------------------------
+      // ADD YOUR SONGS HERE once you've uploaded the files to GitHub.
+      // Use the raw file URL:
+      // https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/audio/FILENAME.mp3
+      // ----------------------------------------------------------------
+      const playlist = [
+        // { title: 'Song Name', src: 'https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/audio/song.mp3' },
+      ];
+
+      const player    = document.getElementById('music-player');
+      const toggleBtn = player.querySelector('.player-toggle');
+      const body      = player.querySelector('.player-body');
+      const audio     = player.querySelector('audio');
+      const titleEl   = player.querySelector('.player-title');
+      const indexEl   = player.querySelector('.player-index');
+      const progress  = player.querySelector('.player-progress');
+      const timeCur   = player.querySelector('.time-current');
+      const timeTot   = player.querySelector('.time-total');
+      const playBtn   = player.querySelector('.player-playpause');
+      const prevBtn   = player.querySelector('.player-prev');
+      const nextBtn   = player.querySelector('.player-next');
+
+      let current = 0;
+      let playing  = false;
+
+      function fmt(s) {
+        if (!isFinite(s)) return '0:00';
+        return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+      }
+
+      function load(index) {
+        current = ((index % playlist.length) + playlist.length) % playlist.length;
+        audio.src = playlist[current].src;
+        titleEl.textContent = playlist[current].title;
+        indexEl.textContent = (current + 1) + ' / ' + playlist.length;
+        progress.value = 0;
+        timeCur.textContent = '0:00';
+        timeTot.textContent = '0:00';
+      }
+
+      function play() { audio.play(); playing = true;  playBtn.textContent = '⏸'; }
+      function pause(){ audio.pause(); playing = false; playBtn.textContent = '▶'; }
+
+      if (playlist.length === 0) {
+        titleEl.textContent = '';
+        titleEl.insertAdjacentHTML('afterend', '<p class="player-empty">No songs loaded yet</p>');
+        playBtn.disabled = prevBtn.disabled = nextBtn.disabled = true;
+      } else {
+        load(0);
+      }
+
+      playBtn.addEventListener('click', () => playing ? pause() : play());
+      prevBtn.addEventListener('click', () => { load(current - 1); play(); });
+      nextBtn.addEventListener('click', () => { load(current + 1); play(); });
+
+      audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        progress.value = (audio.currentTime / audio.duration) * 100;
+        timeCur.textContent = fmt(audio.currentTime);
+      });
+
+      audio.addEventListener('loadedmetadata', () => {
+        timeTot.textContent = fmt(audio.duration);
+      });
+
+      audio.addEventListener('ended', () => {
+        load(current + 1);
+        play();
+      });
+
+      progress.addEventListener('input', () => {
+        if (audio.duration) audio.currentTime = (progress.value / 100) * audio.duration;
+      });
+
+      toggleBtn.addEventListener('click', () => player.classList.toggle('expanded'));
+    })();
+  </script>
 
 </body>
 </html>
