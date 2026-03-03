@@ -1402,6 +1402,9 @@
         const color = typeof cell === 'string' ? cell : cell.color;
         const emoji = typeof cell === 'string' ? null : cell.emoji;
         const px = gx * SZ, py = gy * SZ;
+        // Draw block at reduced opacity so emoji pops
+        cx.save();
+        cx.globalAlpha = 0.55;
         cx.fillStyle = color;
         cx.fillRect(px, py, SZ, SZ);
         // highlight (top-left edge)
@@ -1412,7 +1415,8 @@
         cx.fillStyle = 'rgba(0,0,0,0.3)';
         cx.fillRect(px + SZ - 3, py, 3, SZ);
         cx.fillRect(px, py + SZ - 3, SZ, 3);
-        // instrument emoji
+        cx.restore();
+        // instrument emoji — fully opaque
         if (emoji) {
           cx.font = `${Math.floor(SZ * 0.6)}px serif`;
           cx.textAlign = 'center';
