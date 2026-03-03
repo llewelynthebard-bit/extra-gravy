@@ -1400,7 +1400,6 @@
 
       function drawCell(cx, gx, gy, cell) {
         const color = typeof cell === 'string' ? cell : cell.color;
-        const emoji = typeof cell === 'string' ? null : cell.emoji;
         const px = gx * SZ, py = gy * SZ;
         // Draw block at reduced opacity so emoji pops
         cx.save();
@@ -1416,13 +1415,15 @@
         cx.fillRect(px + SZ - 3, py, 3, SZ);
         cx.fillRect(px, py + SZ - 3, SZ, 3);
         cx.restore();
-        // instrument emoji — fully opaque
-        if (emoji) {
-          cx.font = `${Math.floor(SZ * 0.6)}px serif`;
-          cx.textAlign = 'center';
-          cx.textBaseline = 'middle';
-          cx.fillText(emoji, px + SZ / 2, py + SZ / 2);
-        }
+      }
+
+      function drawEmoji(cx, gx, gy, emoji) {
+        if (!emoji) return;
+        const px = gx * SZ, py = gy * SZ;
+        cx.font = `${Math.floor(SZ * 0.6)}px serif`;
+        cx.textAlign = 'center';
+        cx.textBaseline = 'middle';
+        cx.fillText(emoji, px + SZ / 2, py + SZ / 2);
       }
 
       function draw() {
@@ -1465,6 +1466,17 @@
             for (let c = 0; c < cur.shape[r].length; c++)
               if (cur.shape[r][c] && cur.y + r >= 0)
                 drawCell(ctx, cur.x + c, cur.y + r, { color: cur.color, emoji: cur.emoji });
+        }
+
+        // Emoji pass — drawn after all blocks so icons are never covered
+        for (let r = 0; r < ROWS; r++)
+          for (let c = 0; c < COLS; c++)
+            if (board[r][c]) drawEmoji(ctx, c, r, board[r][c].emoji);
+        if (cur) {
+          for (let r = 0; r < cur.shape.length; r++)
+            for (let c = 0; c < cur.shape[r].length; c++)
+              if (cur.shape[r][c] && cur.y + r >= 0)
+                drawEmoji(ctx, cur.x + c, cur.y + r, cur.emoji);
         }
 
         // Flash message (line clear)
