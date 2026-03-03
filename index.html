@@ -1240,13 +1240,13 @@
       const COLS = 10, ROWS = 20, SZ = 28;
 
       const PIECES = [
-        { color: '#d4b483', shape: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]] }, // Banjo  / I
-        { color: '#f0e4b8', shape: [[1,1],[1,1]] },                              // Fiddle / O
-        { color: '#9b4a1b', shape: [[0,1,0],[1,1,1],[0,0,0]] },                  // Dobro  / T
-        { color: '#4a8a3a', shape: [[0,1,1],[1,1,0],[0,0,0]] },                  // Mandolin / S
-        { color: '#c17f3a', shape: [[1,1,0],[0,1,1],[0,0,0]] },                  // Guitar / Z
-        { color: '#3a6a9b', shape: [[1,0,0],[1,1,1],[0,0,0]] },                  // Dulcimer / J
-        { color: '#8b5bb5', shape: [[0,0,1],[1,1,1],[0,0,0]] },                  // Bass   / L
+        { color: '#d4b483', emoji: '🪕', shape: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]] }, // Banjo  / I
+        { color: '#f0e4b8', emoji: '🎻', shape: [[1,1],[1,1]] },                              // Fiddle / O
+        { color: '#9b4a1b', emoji: '🎸', shape: [[0,1,0],[1,1,1],[0,0,0]] },                  // Dobro  / T
+        { color: '#4a8a3a', emoji: '🪕', shape: [[0,1,1],[1,1,0],[0,0,0]] },                  // Mandolin / S
+        { color: '#c17f3a', emoji: '🎸', shape: [[1,1,0],[0,1,1],[0,0,0]] },                  // Guitar / Z
+        { color: '#3a6a9b', emoji: '🎵', shape: [[1,0,0],[1,1,1],[0,0,0]] },                  // Dulcimer / J
+        { color: '#8b5bb5', emoji: '🎶', shape: [[0,0,1],[1,1,1],[0,0,0]] },                  // Bass   / L
       ];
 
       const SCORE_TBL = [0, 100, 300, 500, 800];
@@ -1274,6 +1274,7 @@
         return {
           shape: p.shape.map(r => r.slice()),
           color: p.color,
+          emoji: p.emoji,
           x: Math.floor((COLS - p.shape[0].length) / 2),
           y: -1,
         };
@@ -1308,11 +1309,11 @@
       }
 
       function place() {
-        const { shape, color, x, y } = cur;
+        const { shape, color, emoji, x, y } = cur;
         for (let r = 0; r < shape.length; r++)
           for (let c = 0; c < shape[r].length; c++)
             if (shape[r][c] && y + r >= 0)
-              board[y + r][x + c] = color;
+              board[y + r][x + c] = { color, emoji };
 
         let cleared = 0;
         for (let r = ROWS - 1; r >= 0; r--) {
@@ -1397,7 +1398,9 @@
 
       // ── DRAWING ──
 
-      function drawCell(cx, gx, gy, color) {
+      function drawCell(cx, gx, gy, cell) {
+        const color = typeof cell === 'string' ? cell : cell.color;
+        const emoji = typeof cell === 'string' ? null : cell.emoji;
         const px = gx * SZ, py = gy * SZ;
         cx.fillStyle = color;
         cx.fillRect(px, py, SZ, SZ);
@@ -1409,6 +1412,13 @@
         cx.fillStyle = 'rgba(0,0,0,0.3)';
         cx.fillRect(px + SZ - 3, py, 3, SZ);
         cx.fillRect(px, py + SZ - 3, SZ, 3);
+        // instrument emoji
+        if (emoji) {
+          cx.font = `${Math.floor(SZ * 0.6)}px serif`;
+          cx.textAlign = 'center';
+          cx.textBaseline = 'middle';
+          cx.fillText(emoji, px + SZ / 2, py + SZ / 2);
+        }
       }
 
       function draw() {
@@ -1450,7 +1460,7 @@
           for (let r = 0; r < cur.shape.length; r++)
             for (let c = 0; c < cur.shape[r].length; c++)
               if (cur.shape[r][c] && cur.y + r >= 0)
-                drawCell(ctx, cur.x + c, cur.y + r, cur.color);
+                drawCell(ctx, cur.x + c, cur.y + r, { color: cur.color, emoji: cur.emoji });
         }
 
         // Flash message (line clear)
@@ -1493,7 +1503,13 @@
         nCtx.fillStyle = nxt.color;
         for (let r = 0; r < s.length; r++)
           for (let c = 0; c < s[r].length; c++)
-            if (s[r][c]) nCtx.fillRect(ox + c * csz, oy + r * csz, csz - 1, csz - 1);
+            if (s[r][c]) {
+              nCtx.fillRect(ox + c * csz, oy + r * csz, csz - 1, csz - 1);
+              nCtx.font = `${Math.floor(csz * 0.65)}px serif`;
+              nCtx.textAlign = 'center';
+              nCtx.textBaseline = 'middle';
+              nCtx.fillText(nxt.emoji, ox + c * csz + csz / 2, oy + r * csz + csz / 2);
+            }
       }
 
       // ── CONTROLS ──
