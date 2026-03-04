@@ -846,6 +846,103 @@
       }
     }
 
+    /* ── SHOP PANEL ── */
+    .shop-intro {
+      font-size: 0.95rem;
+      color: rgba(245, 238, 216, 0.6);
+      font-style: italic;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .merch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .merch-card {
+      background: rgba(46, 31, 14, 0.5);
+      border: 1px solid rgba(122, 92, 53, 0.4);
+      border-top: 3px solid var(--rust);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .merch-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      background: rgba(26, 16, 5, 0.6);
+    }
+
+    .merch-img-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(26, 16, 5, 0.6);
+      font-size: 3rem;
+      color: rgba(122, 92, 53, 0.4);
+    }
+
+    .merch-info {
+      padding: 0.9rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 0.35rem;
+    }
+
+    .merch-name {
+      font-size: 0.95rem;
+      color: var(--tan);
+      letter-spacing: 1px;
+    }
+
+    .merch-desc {
+      font-size: 0.78rem;
+      color: rgba(245, 238, 216, 0.45);
+      font-style: italic;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .merch-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+    }
+
+    .merch-price {
+      font-size: 1.05rem;
+      color: var(--cream);
+      letter-spacing: 1px;
+    }
+
+    .merch-btn {
+      padding: 0.35rem 0.85rem;
+      border: 1px solid var(--rust);
+      background: none;
+      color: var(--rust);
+      font-family: 'Georgia', serif;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      display: inline-block;
+    }
+
+    .merch-btn:hover {
+      background: var(--rust);
+      color: var(--cream);
+    }
+
   </style>
 </head>
 <body>
@@ -864,6 +961,7 @@
     <button role="tab" data-tab="shows">Shows</button>
     <button class="active" role="tab" data-tab="about">About</button>
     <button role="tab" data-tab="contact">Contact</button>
+    <button role="tab" data-tab="shop">Shop</button>
     <button role="tab" data-tab="game">Game</button>
   </nav>
 
@@ -988,6 +1086,65 @@
           <a href="mailto:extragravymusic1@gmail.com" class="contact-item">extragravymusic1@gmail.com</a>
           <a href="tel:+12017396614" class="contact-item">201-739-6614</a>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div class="tab-panel" id="tab-shop" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Shop</h2>
+      <p class="shop-intro">Support the band &mdash; grab some Extra Gravy merch.</p>
+      <div class="merch-grid">
+
+        <div class="merch-card">
+          <div class="merch-img-placeholder">👕</div>
+          <div class="merch-info">
+            <div class="merch-name">Classic Tee</div>
+            <div class="merch-desc">Extra Gravy logo on front, 100% cotton</div>
+            <div class="merch-footer">
+              <span class="merch-price">$25</span>
+              <a href="#" class="merch-btn">Buy</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="merch-card">
+          <div class="merch-img-placeholder">🧢</div>
+          <div class="merch-info">
+            <div class="merch-name">Snapback Hat</div>
+            <div class="merch-desc">Embroidered EG logo, one size fits most</div>
+            <div class="merch-footer">
+              <span class="merch-price">$30</span>
+              <a href="#" class="merch-btn">Buy</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="merch-card">
+          <div class="merch-img-placeholder">🍺</div>
+          <div class="merch-info">
+            <div class="merch-name">Pint Glass</div>
+            <div class="merch-desc">16 oz. glass with EG logo &mdash; cheers!</div>
+            <div class="merch-footer">
+              <span class="merch-price">$15</span>
+              <a href="#" class="merch-btn">Buy</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="merch-card">
+          <div class="merch-img-placeholder">🎵</div>
+          <div class="merch-info">
+            <div class="merch-name">Sticker Pack</div>
+            <div class="merch-desc">Set of 4 vinyl stickers, weatherproof</div>
+            <div class="merch-footer">
+              <span class="merch-price">$8</span>
+              <a href="#" class="merch-btn">Buy</a>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
