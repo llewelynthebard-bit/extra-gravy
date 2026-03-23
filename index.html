@@ -487,9 +487,29 @@
     }
 
     /* ── CONTACT PANEL ── */
-    .contact-wrap {
+    .contact-layout {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
       margin-top: 2.5rem;
-      max-width: 520px;
+    }
+    .contact-logo {
+      width: 260px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .contact-layout {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+      }
+      .contact-logo {
+        width: 100%;
+        max-width: 280px;
+        align-self: center;
+      }
+    }
+    .contact-wrap {
+      flex: 1;
     }
 
     .contact-intro {
@@ -990,13 +1010,15 @@
   <div class="tab-panel" id="tab-contact" role="tabpanel">
     <div class="panel-inner">
       <h2>Contact</h2>
-      <img src="https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/ExtraGravyLogo1.png" alt="Extra Gravy Logo" style="display:block;margin:0 auto 1.5rem;max-width:300px;width:100%;" />
-      <div class="contact-wrap">
-        <p class="contact-intro">For booking inquiries, reach out by email or phone:</p>
-        <div class="contact-details">
-          <a href="mailto:extragravymusic1@gmail.com" class="contact-item">extragravymusic1@gmail.com</a>
-          <a href="tel:+12017396614" class="contact-item">201-739-6614</a>
+      <div class="contact-layout">
+        <div class="contact-wrap">
+          <p class="contact-intro">For booking inquiries, reach out by email or phone:</p>
+          <div class="contact-details">
+            <a href="mailto:extragravymusic1@gmail.com" class="contact-item">extragravymusic1@gmail.com</a>
+            <a href="tel:+12017396614" class="contact-item">201-739-6614</a>
+          </div>
         </div>
+        <img src="https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/ExtraGravyLogo1.png" alt="Extra Gravy Logo" class="contact-logo" />
       </div>
     </div>
   </div>
