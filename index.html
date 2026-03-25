@@ -56,6 +56,19 @@
     }
 
 
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .header-logo-side {
+      height: clamp(2.8rem, 8vw, 5.5rem);
+      width: auto;
+    }
+    .header-logo-flip {
+      transform: scaleX(-1);
+    }
     header h1 {
       font-size: clamp(2.8rem, 8vw, 5.5rem);
       letter-spacing: 6px;
@@ -879,7 +892,11 @@
   <!-- HEADER -->
   <header>
     <div class="header-notes" aria-hidden="true"></div>
-    <h1>Extra Gravy</h1>
+    <div class="header-title-row">
+      <img src="https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/ExtraGravyLogoTransparent.png" alt="" aria-hidden="true" class="header-logo-side">
+      <h1>Extra Gravy</h1>
+      <img src="https://raw.githubusercontent.com/llewelynthebard-bit/extra-gravy/main/ExtraGravyLogoTransparent.png" alt="" aria-hidden="true" class="header-logo-side header-logo-flip">
+    </div>
     <p class="tagline-sub">Bold Original Bluegrass</p>
     <p class="tagline">Boulder, Colorado</p>
   </header>
