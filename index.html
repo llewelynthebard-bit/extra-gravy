@@ -280,6 +280,53 @@
     }
 
     /* ── SHOWS PANEL ── */
+    /* ── ORIGINAL MUSIC ── */
+    .song-item {
+      border: 1px solid rgba(122,92,53,0.35);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    .song-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      background: rgba(0,0,0,0.2);
+      transition: background 0.2s;
+    }
+    .song-header:hover { background: rgba(122,92,53,0.2); }
+    .song-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--tan);
+      letter-spacing: 1px;
+    }
+    .song-credits {
+      font-size: 0.8rem;
+      color: rgba(212,180,131,0.6);
+      margin-top: 0.2rem;
+    }
+    .song-toggle {
+      color: var(--rust);
+      font-size: 1.2rem;
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .song-item.open .song-toggle { transform: rotate(180deg); }
+    .song-lyrics {
+      display: none;
+      padding: 1.25rem 1.5rem;
+      white-space: pre-wrap;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: rgba(212,180,131,0.85);
+      border-top: 1px solid rgba(122,92,53,0.25);
+    }
+    .song-item.open .song-lyrics { display: block; }
+
     .shows-list {
       margin-top: 2.5rem;
       display: flex;
@@ -905,6 +952,7 @@
     <button role="tab" data-tab="listen">Listen</button>
     <button role="tab" data-tab="shows">Shows</button>
     <button class="active" role="tab" data-tab="about">About</button>
+    <button role="tab" data-tab="original-music">Original Music</button>
 <button role="tab" data-tab="contact">Contact</button>
 <button role="tab" data-tab="game">Game</button>
   </nav>
@@ -1069,6 +1117,14 @@
     </div>
   </div>
 
+  <!-- ORIGINAL MUSIC -->
+  <div class="tab-panel" id="tab-original-music" role="tabpanel">
+    <div class="panel-inner">
+      <h2>Original Music</h2>
+      <div id="songs-list"><p style="color:var(--tan);opacity:0.6;">Loading…</p></div>
+    </div>
+  </div>
+
   <!-- CONTACT -->
   <div class="tab-panel" id="tab-contact" role="tabpanel">
     <div class="panel-inner">
@@ -1185,6 +1241,63 @@
       [0, 600, 1300, 2100].forEach(delay => setTimeout(spawnNote, delay));
       // Then keep a gentle trickle going
       setInterval(spawnNote, 1800);
+    })();
+
+    // Original Music — fetch from Google Sheet CSV
+    (function loadSongs() {
+      const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTauLuGbvot6_a5ki7QuunRzQewQXLYOWFtM9BxTIGYA29qVPQaqDIAmTzScemhGG0VJ_GSK4rqnb_0/pub?gid=0&single=true&output=csv';
+      function parseCSV(text) {
+        const rows = [];
+        let i = 0;
+        while (i < text.length) {
+          const row = [];
+          while (i < text.length && text[i] !== '\n') {
+            if (text[i] === '"') {
+              let val = ''; i++;
+              while (i < text.length) {
+                if (text[i] === '"' && text[i+1] === '"') { val += '"'; i += 2; }
+                else if (text[i] === '"') { i++; break; }
+                else { val += text[i++]; }
+              }
+              row.push(val);
+              if (text[i] === ',') i++;
+            } else {
+              let val = '';
+              while (i < text.length && text[i] !== ',' && text[i] !== '\n') val += text[i++];
+              row.push(val);
+              if (text[i] === ',') i++;
+            }
+          }
+          if (text[i] === '\n') i++;
+          rows.push(row);
+        }
+        return rows;
+      }
+      fetch(CSV_URL).then(r => r.text()).then(text => {
+        const rows = parseCSV(text);
+        const headers = rows[0].map(h => h.trim().toLowerCase());
+        const ti = headers.indexOf('title'), ci = headers.indexOf('credits'), li = headers.indexOf('lyrics');
+        const container = document.getElementById('songs-list');
+        container.innerHTML = '';
+        rows.slice(1).forEach(row => {
+          if (!row[ti]) return;
+          const item = document.createElement('div');
+          item.className = 'song-item';
+          item.innerHTML = `
+            <div class="song-header">
+              <div>
+                <div class="song-title">${row[ti] || ''}</div>
+                <div class="song-credits">${row[ci] ? 'Written by ' + row[ci] : ''}</div>
+              </div>
+              <span class="song-toggle">&#9660;</span>
+            </div>
+            <pre class="song-lyrics">${(row[li] || '').replace(/</g,'&lt;')}</pre>`;
+          item.querySelector('.song-header').addEventListener('click', () => item.classList.toggle('open'));
+          container.appendChild(item);
+        });
+      }).catch(() => {
+        document.getElementById('songs-list').innerHTML = '<p style="color:var(--tan);opacity:0.6;">Could not load songs.</p>';
+      });
     })();
 
     // Tab switching
