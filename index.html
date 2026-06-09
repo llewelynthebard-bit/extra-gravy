@@ -993,7 +993,7 @@
   <div class="tab-panel" id="tab-shows" role="tabpanel">
     <div class="panel-inner">
       <h2>Upcoming Shows</h2>
-<div class="shows-list">
+      <div class="shows-list" id="upcoming-shows">
 
         <div class="show-item">
           <div class="show-date">
@@ -1104,10 +1104,6 @@
           </div>
         </div>
 
-      </div>
-
-      <h2 style="margin-top:2.5rem;">Past Shows</h2>
-      <div class="shows-list past-shows">
         <div class="show-item">
           <div class="show-date">
             <span class="month">Mar</span>
@@ -1119,6 +1115,7 @@
             <p>Gold Hill, CO &mdash; 7:00&ndash;10:00pm</p>
           </div>
         </div>
+
         <div class="show-item">
           <div class="show-date">
             <span class="month">Dec</span>
@@ -1130,6 +1127,7 @@
             <p>Westminster, CO &mdash; 9:00pm&ndash;12:00am</p>
           </div>
         </div>
+
         <div class="show-item">
           <div class="show-date">
             <span class="month">Nov</span>
@@ -1141,6 +1139,7 @@
             <p>Gold Hill, CO &mdash; 7:00&ndash;11:00pm</p>
           </div>
         </div>
+
         <div class="show-item">
           <div class="show-date">
             <span class="month">Oct</span>
@@ -1152,6 +1151,7 @@
             <p>Lafayette, CO &mdash; 12:00&ndash;3:00pm</p>
           </div>
         </div>
+
         <div class="show-item">
           <div class="show-date">
             <span class="month">Sep</span>
@@ -1163,6 +1163,13 @@
             <p>Conifer, CO &mdash; 3:00&ndash;5:00pm</p>
           </div>
         </div>
+
+      </div>
+      <p class="no-shows" id="no-upcoming" style="display:none">No upcoming shows scheduled — check back soon!</p>
+
+      <div id="past-shows-section" style="display:none">
+        <h2 style="margin-top:2.5rem;">Past Shows</h2>
+        <div class="shows-list" id="past-shows"></div>
       </div>
     </div>
   </div>
@@ -1403,11 +1410,21 @@
       });
     });
 
-    // Shows: inject day-of-week and Google Maps click
+    // Shows: sort into upcoming/past by today's date, inject day-of-week, Google Maps click
     (function initShows() {
       const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       const MONTHS = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
                        Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const upcomingList = document.getElementById('upcoming-shows');
+      const pastList     = document.getElementById('past-shows');
+      const pastSection  = document.getElementById('past-shows-section');
+      const noUpcoming   = document.getElementById('no-upcoming');
+
+      const upcoming = [], past = [];
 
       document.querySelectorAll('.show-item').forEach(item => {
         const monthEl = item.querySelector('.show-date .month');
@@ -1415,27 +1432,47 @@
         const yearEl  = item.querySelector('.show-date .year');
         if (!monthEl || !dayEl || !yearEl) return;
 
-        // Inject day-of-week
-        const d = new Date(
+        const showDate = new Date(
           parseInt(yearEl.textContent),
           MONTHS[monthEl.textContent.trim()],
           parseInt(dayEl.textContent)
         );
+
         const dow = document.createElement('span');
         dow.className = 'dow';
-        dow.textContent = DAYS[d.getDay()];
+        dow.textContent = DAYS[showDate.getDay()];
         yearEl.after(dow);
 
-        // Google Maps click
-        const venue = item.querySelector('.show-info h3');
+        const venue   = item.querySelector('.show-info h3');
         const details = item.querySelector('.show-info p');
-        if (!venue) return;
-        const city = details ? details.textContent.split('\u2014')[0].trim() : '';
-        const query = encodeURIComponent((venue.textContent + ' ' + city).trim());
-        item.addEventListener('click', () => {
-          window.open('https://www.google.com/maps/search/?api=1&query=' + query, '_blank', 'noopener');
-        });
+        if (venue) {
+          const city  = details ? details.textContent.split('\u2014')[0].trim() : '';
+          const query = encodeURIComponent((venue.textContent + ' ' + city).trim());
+          item.addEventListener('click', () => {
+            window.open('https://www.google.com/maps/search/?api=1&query=' + query, '_blank', 'noopener');
+          });
+        }
+
+        if (showDate >= today) {
+          upcoming.push({ date: showDate, item });
+        } else {
+          past.push({ date: showDate, item });
+        }
       });
+
+      upcoming.sort((a, b) => a.date - b.date);
+      past.sort((a, b) => b.date - a.date);
+
+      upcoming.forEach(({ item }) => upcomingList.appendChild(item));
+
+      if (past.length > 0) {
+        past.forEach(({ item }) => pastList.appendChild(item));
+        pastSection.style.display = '';
+      }
+
+      if (upcoming.length === 0) {
+        noUpcoming.style.display = '';
+      }
     })();
 
   </script>
